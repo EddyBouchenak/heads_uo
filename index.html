@@ -3,186 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HU Turbo Coach - Direct Input</title>
+    <title>HU Flash Decision</title>
     <style>
         :root {
-            --bg: #0f0f0f; --card-bg: #1a1a1a;
-            --spades: #2f3542; --hearts: #ff4757; --clubs: #2ed573; --diamonds: #1e90ff;
-            --text: #ffffff; --gold: #ffa502; --white: #ffffff;
+            --bg: #0a0a0a; --card: #1a1a1a; --gold: #ffcc00; --red: #ff4757; --green: #2ed573; --blue: #1e90ff;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; padding: 10px; }
+        .app { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 10px; }
         
-        .app-container { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-
-        /* Zones */
-        .zone { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid #333; display: flex; flex-direction: column; align-items: center; }
-        .zone-opp { border-left: 5px solid var(--hearts); }
-        .zone-board { border-left: 5px solid var(--clubs); min-height: 120px; }
-        .zone-me { border-left: 5px solid var(--diamonds); }
-
-        h2 { font-size: 0.8em; text-transform: uppercase; margin: 0 0 10px 0; color: #888; width: 100%; text-align: left; }
-
-        /* Cartes */
-        .card-row { display: flex; gap: 8px; margin-bottom: 10px; }
-        .card { width: 45px; height: 65px; background: var(--white); border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1em; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
-        .card.red { color: #d63031; }
-        .card.empty { background: rgba(255,255,255,0.05); border: 2px dashed #444; color: #444; cursor: default; }
-        .card:hover:not(.empty) { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-
-        /* Grille de sélection Directe */
-        .selection-grid { 
-            display: grid; 
-            grid-template-columns: repeat(13, 1fr); 
-            gap: 4px; 
-            background: #111; 
-            padding: 10px; 
-            border-radius: 8px; 
-            margin: 10px 0;
-            width: 100%;
+        .section { background: var(--card); border-radius: 10px; padding: 12px; border: 1px solid #333; }
+        .row { display: flex; gap: 8px; margin-bottom: 8px; }
+        
+        /* Boutons de catégorie ultra-rapides */
+        .cat-btn { 
+            flex: 1; padding: 15px 5px; border: none; border-radius: 6px; 
+            font-weight: bold; cursor: pointer; font-size: 0.85em;
+            background: #333; color: white; transition: 0.1s;
         }
-        .sel-btn { padding: 8px 0; border: 1px solid #444; background: #222; color: white; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
-        .sel-btn:active { background: var(--gold); color: black; }
-        .suit-row { display: flex; justify-content: center; gap: 20px; margin-top: 5px; width: 100%; }
-        .suit-btn { font-size: 1.5em; padding: 5px 25px; border-radius: 8px; border: 1px solid #444; cursor: pointer; background: #222; }
-
-        /* Stats & Mise */
-        .controls { display: flex; gap: 15px; width: 100%; justify-content: center; flex-wrap: wrap; }
-        .input-box { display: flex; flex-direction: column; align-items: center; }
-        .input-box label { font-size: 0.6em; margin-bottom: 4px; color: var(--gold); }
-        input { background: #000; border: 1px solid #444; color: white; padding: 8px; border-radius: 5px; width: 60px; text-align: center; font-size: 1em; }
-
-        .btn-action { padding: 10px 15px; border: 1px solid #444; background: #333; color: white; border-radius: 6px; cursor: pointer; font-size: 0.8em; flex: 1; }
-        .btn-action.active { background: var(--gold); color: black; font-weight: bold; border-color: white; }
+        .cat-btn:active { transform: scale(0.95); background: var(--gold); color: black; }
         
-        .btn-main { background: var(--gold); color: black; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 1.1em; border: none; cursor: pointer; width: 100%; margin-top: 10px; }
+        .premium { background: #4b3b00; border: 1px solid var(--gold); } /* AA, KK, AK */
+        .strong { background: #1e3a2a; border: 1px solid var(--green); } /* AX, Grosses cartes */
+        .speculative { background: #1a2a3a; border: 1px solid var(--blue); } /* Connecteurs, petites paires */
         
-        #decision { font-size: 1.4em; font-weight: bold; color: var(--gold); margin-top: 10px; min-height: 1.6em; text-align: center; }
+        .display { font-size: 1.5rem; text-align: center; font-weight: bold; padding: 20px; color: var(--gold); min-height: 40px; text-transform: uppercase; }
+        
+        .input-mini { background: #000; border: 1px solid #444; color: white; padding: 8px; width: 50px; text-align: center; border-radius: 4px; }
+        .toggle { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-dealer { background: var(--green); color: black; }
+        .btn-not-dealer { background: #444; color: white; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    
-    <div class="zone zone-opp">
-        <h2>Adversaire</h2>
-        <div class="controls">
-            <div class="input-box"><label>TAPIS (BB)</label><input type="number" id="opp-stack" value="40"></div>
-            <div class="input-box"><label>SA MISE</label><input type="number" id="opp-bet" value="0"></div>
-            <button class="btn-action" id="btn-fold" onclick="setOpp('FOLD')">IL A FOLD</button>
-            <button class="btn-action" id="btn-raise" onclick="setOpp('RAISE')">IL MISE</button>
+<div class="app">
+    <div class="section">
+        <div class="row">
+            <button id="pos-btn" class="toggle btn-dealer" onclick="togglePos()">MOI AU BOUTON</button>
+            <div style="display:flex; align-items:center; gap:5px;">
+                <label style="font-size:0.7em">MON TAPIS (BB)</label>
+                <input type="number" id="my-bb" class="input-mini" value="25">
+            </div>
         </div>
     </div>
 
-    <div class="zone zone-board">
-        <div class="card-row" id="board-cards">
-            <div class="card empty"></div><div class="card empty"></div><div class="card empty"></div><div class="card empty"></div><div class="card empty"></div>
+    <div class="section">
+        <small style="color:#888">1. CLIQUE SUR TA MAIN :</small>
+        <div class="row" style="margin-top:5px;">
+            <button class="cat-btn premium" onclick="decide('PREMIUM')">TOP (AA, KK, QQ, AK)</button>
+            <button class="cat-btn strong" onclick="decide('STRONG')">AS OU ROI FORT</button>
         </div>
-        <div id="decision">SÉLECTIONNE TA MAIN</div>
-    </div>
-
-    <div class="zone zone-me">
-        <h2>Moi</h2>
-        <div class="controls">
-            <div class="input-box"><label>MON TAPIS (BB)</label><input type="number" id="my-stack" value="40"></div>
-            <button class="btn-action" id="btn-dealer" onclick="toggleDealer()" style="background: var(--clubs); color: black;">JE SUIS AU BOUTON</button>
-            <button class="btn-action" onclick="resetAll()" style="background: var(--hearts);">RESET</button>
+        <div class="row">
+            <button class="cat-btn strong" onclick="decide('PAIR')">PAIRE (22-JJ)</button>
+            <button class="cat-btn speculative" onclick="decide('MED')">CARTES MOYENNES</button>
         </div>
-        <div class="card-row" id="my-cards" style="margin-top:15px;">
-            <div class="card empty"></div><div class="card empty"></div>
+        <div class="row">
+            <button class="cat-btn" onclick="decide('WEAK')">AS PETIT / POUBELLE</button>
+            <button class="cat-btn" style="background:#442222" onclick="reset()">RESET</button>
         </div>
     </div>
 
-    <div class="zone" style="border: 2px solid var(--gold);">
-        <h2 style="text-align:center; width:100%; color:var(--gold);">Saisie Rapide : Valeur + Couleur</h2>
-        <div class="selection-grid">
-            <button class="sel-btn" onclick="setVal('A')">A</button><button class="sel-btn" onclick="setVal('K')">K</button>
-            <button class="sel-btn" onclick="setVal('Q')">Q</button><button class="sel-btn" onclick="setVal('J')">J</button>
-            <button class="sel-btn" onclick="setVal('T')">10</button><button class="sel-btn" onclick="setVal('9')">9</button>
-            <button class="sel-btn" onclick="setVal('8')">8</button><button class="sel-btn" onclick="setVal('7')">7</button>
-            <button class="sel-btn" onclick="setVal('6')">6</button><button class="sel-btn" onclick="setVal('5')">5</button>
-            <button class="sel-btn" onclick="setVal('4')">4</button><button class="sel-btn" onclick="setVal('3')">3</button>
-            <button class="sel-btn" onclick="setVal('2')">2</button>
+    <div class="section">
+        <div class="row" style="align-items:center;">
+            <label style="flex:1">MISE ADVERSE :</label>
+            <button class="cat-btn" style="max-width:80px;" onclick="setOpp(0)">AUCUNE</button>
+            <button class="cat-btn" style="max-width:80px;" onclick="setOpp(3)">PETITE</button>
+            <button class="cat-btn" style="max-width:80px; background:var(--red)" onclick="setOpp(100)">TAPIS !</button>
         </div>
-        <div class="suit-row">
-            <button class="suit-btn" onclick="setSuit('♠', 'black')" style="color:white">♠</button>
-            <button class="suit-btn" onclick="setSuit('♥', 'red')" style="color:var(--hearts)">♥</button>
-            <button class="suit-btn" onclick="setSuit('♣', 'black')" style="color:var(--clubs)">♣</button>
-            <button class="suit-btn" onclick="setSuit('♦', 'red')" style="color:var(--diamonds)">♦</button>
-        </div>
-        <button class="btn-main" onclick="analyze()">ANALYSER L'ACTION</button>
     </div>
 
+    <div class="section" style="border: 2px solid var(--gold);">
+        <div id="display-action" class="display">ATTENTE...</div>
+    </div>
 </div>
 
 <script>
-    let myHand = [];
-    let board = [];
-    let curVal = '';
     let isDealer = true;
+    let oppBet = 0;
 
-    function setVal(v) { curVal = v; }
-
-    function setSuit(s, color) {
-        if(!curVal) return;
-        const card = { v: curVal, s: s, c: color };
-        
-        if (myHand.length < 2) {
-            myHand.push(card);
-        } else if (board.length < 5) {
-            board.push(card);
-        }
-        curVal = ''; // Reset valeur pour le prochain clic
-        render();
-        if(myHand.length === 2) analyze();
-    }
-
-    function render() {
-        const hDiv = document.getElementById('my-cards');
-        hDiv.innerHTML = myHand.map(c => `<div class="card ${c.c === 'red' ? 'red' : ''}">${c.v}<span>${c.s}</span></div>`).join('') + (myHand.length < 2 ? '<div class="card empty"></div>'.repeat(2-myHand.length) : '');
-        
-        const bDiv = document.getElementById('board-cards');
-        bDiv.innerHTML = board.map(c => `<div class="card ${c.c === 'red' ? 'red' : ''}">${c.v}<span>${c.s}</span></div>`).join('') + '<div class="card empty"></div>'.repeat(5 - board.length);
-    }
-
-    function toggleDealer() {
+    function togglePos() {
         isDealer = !isDealer;
-        document.getElementById('btn-dealer').innerText = isDealer ? "JE SUIS AU BOUTON" : "HORS POSITION";
-        document.getElementById('btn-dealer').style.background = isDealer ? "var(--clubs)" : "#333";
+        const btn = document.getElementById('pos-btn');
+        btn.innerText = isDealer ? "MOI AU BOUTON" : "HORS POSITION";
+        btn.className = isDealer ? "toggle btn-dealer" : "toggle btn-not-dealer";
     }
 
-    function setOpp(action) {
-        document.querySelectorAll('.btn-action').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-' + action.toLowerCase()).classList.add('active');
-        analyze();
+    function setOpp(val) {
+        oppBet = val;
+        document.getElementById('display-action').innerText = "CLIQUE SUR TA MAIN";
     }
 
-    function resetAll() {
-        myHand = []; board = []; curVal = '';
-        document.getElementById('opp-bet').value = 0;
-        render();
-        document.getElementById('decision').innerText = "SÉLECTIONNE TA MAIN";
-    }
-
-    function analyze() {
-        const dec = document.getElementById('decision');
-        const myBB = parseFloat(document.getElementById('my-stack').value);
-        const oppBet = parseFloat(document.getElementById('opp-bet').value);
-
-        if (myHand.length < 2) return;
-
-        // Logique simplifiée ultra-agressive Heads-Up
-        if (board.length === 0) {
-            if (isDealer) {
-                if (oppBet > 10) dec.innerText = (myHand[0].v === myHand[1].v || myHand[0].v === 'A') ? "ALL-IN !" : "FOLD";
-                else dec.innerText = "RELANCE 2.2 BB";
+    function decide(type) {
+        const bb = parseInt(document.getElementById('my-bb').value);
+        const res = document.getElementById('display-action');
+        
+        // Logique simplifiée "Cerveau de Pro"
+        if (isDealer) {
+            if (oppBet >= 100) { // S'il fait tapis
+                if (type === 'PREMIUM' || (type === 'STRONG' && bb < 15)) res.innerText = "🔥 PAYE (ALL-IN)";
+                else res.innerText = "❌ FOLD";
             } else {
-                if (oppBet > 2) dec.innerText = (myHand[0].v === 'A' || myHand[0].v === 'K') ? "3-BET (RELANCE)" : "FOLD";
-                else dec.innerText = "CHECK / DÉFENSE";
+                if (type === 'WEAK') res.innerText = "➡️ RELANCE 2BB (BLUFF)";
+                else res.innerText = "⚔️ RELANCE 2.5BB";
             }
-        } else {
-            // Analyse sommaire post-flop
-            dec.innerText = "ANALYSE BOARD : " + (myHand[0].v === board[0]?.v ? "TOP PAIRE ! MISE" : "PRUDENCE");
+        } else { // Hors position
+            if (oppBet === 0) {
+                res.innerText = "✅ CHECK / ATTEND";
+            } else {
+                if (type === 'PREMIUM') res.innerText = "🚀 RELANCE FORT (3-BET)";
+                else if (type === 'STRONG' || type === 'PAIR') res.innerText = "🃏 PAYE (VOIR FLOP)";
+                else res.innerText = "❌ FOLD";
+            }
         }
+        
+        // Alerte Stack (Moins de 10 BB)
+        if (bb <= 10 && type !== 'WEAK' && oppBet < 100) {
+            res.innerText = "⚠️ TAPIS DIRECT !";
+            res.style.color = "var(--red)";
+        } else {
+            res.style.color = "var(--gold)";
+        }
+    }
+
+    function reset() {
+        oppBet = 0;
+        document.getElementById('display-action').innerText = "PRÊT";
+        document.getElementById('display-action').style.color = "var(--gold)";
     }
 </script>
 </body>
