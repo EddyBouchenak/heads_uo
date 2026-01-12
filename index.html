@@ -3,86 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HU Coach Pro - Tooltip Edition</title>
+    <title>HU Tactical Coach - Visuel Direct</title>
     <style>
         :root {
             --bg: #080808; --card: #151515; --gold: #ffcc00; --red: #ff4757; 
             --green: #2ed573; --blue: #1e90ff; --gray: #2f3542; --white: #ffffff;
+            --dark-green: #1b6d5b; --dark-blue: #1a5a7a;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'system-ui', sans-serif; background: var(--bg); color: var(--white); margin: 0; display: flex; justify-content: center; padding: 10px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--white); margin: 0; display: flex; justify-content: center; padding: 10px; }
         
         .app { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 12px; }
 
-        /* Zones et Steps */
-        .section { background: var(--card); border-radius: 16px; padding: 18px; border: 2px solid #252525; position: relative; }
+        .section { background: var(--card); border-radius: 16px; padding: 18px; border: 2px solid #252525; transition: all 0.3s ease; }
         .active-step { border-color: var(--gold) !important; box-shadow: 0 0 20px rgba(255, 204, 0, 0.15); }
 
-        .label-step { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: block; font-weight: 800; }
+        .label-step { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: block; font-weight: 800; letter-spacing: 1px; }
 
-        /* Style des Boutons de Mains avec Tooltip */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-container { position: relative; display: inline-block; width: 100%; }
-        
-        .btn { width: 100%; padding: 18px 10px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 0.9rem; color: white; background: #2a2a2a; }
-        
-        /* Tooltip (Bulle) */
-        .tooltip {
-            visibility: hidden;
-            width: 200px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 10px;
-            position: absolute;
-            z-index: 100;
-            bottom: 125%; /* Au-dessus du bouton */
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.75rem;
-            font-weight: normal;
-            border: 1px solid var(--gold);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            pointer-events: none;
-        }
-
-        .btn-container:hover .tooltip { visibility: visible; opacity: 1; }
-
-        /* Couleurs */
-        .premium { background: linear-gradient(135deg, #b8860b, #daa520); color: black; }
-        .strong { background: #1b6d5b; }
-        .spec { background: #1a5a7a; }
-        .weak { background: #3d3d3d; }
-
-        /* Navigation et Status */
-        .pos-selector { display: flex; background: #000; border-radius: 50px; padding: 5px; border: 1px solid #333; margin-bottom: 10px; }
-        .pos-btn { flex: 1; padding: 12px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; color: #666; background: transparent; }
+        /* Sélecteur de Position */
+        .pos-selector { display: flex; background: #000; border-radius: 50px; padding: 5px; border: 1px solid #333; margin-bottom: 15px; }
+        .pos-btn { flex: 1; padding: 12px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; color: #666; background: transparent; transition: 0.3s; }
         .pos-btn.active { background: var(--blue); color: white; }
+
+        /* Indicateur de Rue (Street) */
         .street-indicator { display: flex; gap: 5px; margin-bottom: 15px; }
         .st-dot { flex: 1; height: 6px; border-radius: 10px; background: #333; }
-        .st-dot.active { background: var(--gold); }
+        .st-dot.active { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
 
+        /* Grille de Boutons avec Texte Détaillé (Comme images) */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px 10px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; 
+            transition: 0.2s; background: #2a2a2a; color: white; text-align: center;
+        }
+        .btn span { font-size: 1.1rem; display: block; margin-bottom: 4px; }
+        .btn small { font-size: 0.75rem; opacity: 0.9; font-weight: normal; }
+        
+        .premium { background: linear-gradient(135deg, #b8860b, #daa520); color: black; }
+        .strong { background: var(--dark-green); }
+        .spec { background: var(--dark-blue); }
+        .weak { background: #3d3d3d; }
+
+        /* Actions Adversaire */
         .opp-row { display: flex; gap: 10px; }
-        .opp-btn { flex: 1; background: #222; border: 1px solid #444; padding: 15px; border-radius: 12px; font-weight: bold; color: white; }
+        .opp-btn { flex: 1; background: #222; border: 1px solid #444; padding: 15px; border-radius: 12px; font-weight: 800; color: white; cursor: pointer; }
         .opp-btn.selected { background: var(--red); border-color: white; }
 
+        /* Résultat */
         .display { text-align: center; padding: 25px; border-radius: 20px; border: 4px solid var(--gray); background: #000; }
-        .action-main { font-size: 2rem; font-weight: 900; }
+        .action-main { font-size: 2.2rem; font-weight: 900; line-height: 1; color: var(--gold); }
 
-        @media (min-width: 768px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (min-width: 768px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
 <body>
 
 <div class="app">
     <div id="step1" class="section active-step">
-        <span class="label-step">1. Duel & Position</span>
+        <span class="label-step">1. Configuration du Duel</span>
         <div class="pos-selector">
-            <button id="p-btn-on" class="pos-btn active" onclick="setPos(true)">BOUTON</button>
-            <button id="p-btn-off" class="pos-btn" onclick="setPos(false)">HORS POS</button>
+            <button id="p-btn-on" class="pos-btn active" onclick="setPos(true)">OUI (BOUTON)</button>
+            <button id="p-btn-off" class="pos-btn" onclick="setPos(false)">NON (HORS POS)</button>
         </div>
         <div class="street-indicator">
             <div id="dot-PRE" class="st-dot active"></div>
@@ -90,18 +72,23 @@
             <div id="dot-TURN" class="st-dot"></div>
             <div id="dot-RIVER" class="st-dot"></div>
         </div>
+        <div style="text-align:center; margin-top: 10px;">
+            <label style="font-size:0.8rem; opacity: 0.7;">MON TAPIS : </label>
+            <input type="number" id="my-bb" value="25" style="background:transparent; border:none; border-bottom:2px solid var(--gold); color:var(--gold); font-size:1.2rem; width:60px; text-align:center; font-weight:bold;"> 
+            <span style="color:var(--gold); font-weight:bold;">BB</span>
+        </div>
     </div>
 
     <div id="step2" class="section">
-        <span class="label-step">2. Action Adverse</span>
+        <span class="label-step">2. Action de l'adversaire</span>
         <div class="opp-row">
-            <button class="btn opp-btn" id="opp-check" onclick="setOpp('CHECK')">CHECK / CALL</button>
-            <button class="btn opp-btn" id="opp-raise" onclick="setOpp('RAISE')">MISE / RELANCE</button>
+            <button class="opp-btn" id="opp-check" onclick="setOpp('CHECK')">CHECK / CALL</button>
+            <button class="opp-btn" id="opp-raise" onclick="setOpp('RAISE')">MISE / RELANCE</button>
         </div>
     </div>
 
     <div id="step3" class="section">
-        <span class="label-step" id="hand-label">3. Ma Main</span>
+        <span class="label-step" id="hand-label">3. Ma main (PRE-FLOP)</span>
         <div id="btn-grid" class="grid"></div>
     </div>
 
@@ -109,50 +96,40 @@
         <div id="res-main" class="action-main">---</div>
     </div>
 
-    <button class="btn" style="background:var(--red); border: 2px solid white; margin-top:10px;" onclick="reset()">RESET MATCH</button>
+    <button class="btn" style="background:var(--red); height:60px; font-size:1.2rem; margin-top:10px; border: 2px solid white;" onclick="reset()">RESET (MATCH SUIVANT)</button>
 </div>
 
 <script>
     let isDealer = true, street = 'PRE', oppAction = '', myPower = '';
     const streets = ['PRE', 'FLOP', 'TURN', 'RIVER'];
 
-    // Définition des tooltips
-    const descriptions = {
-        PREMIUM: "AA, KK, QQ, JJ, AKs, AKo. Les meilleures mains possibles.",
-        STRONG: "AQ, AJ, KQ, KJs, Paires (77-TT). Très solide en duel.",
-        SPEC: "89s, JTs, QJ, Petites paires. Fort potentiel de suite/couleur.",
-        WEAK: "Ax faible, K5+, Q7+, n'importe quelle carte dépareillée jouable.",
-        HIT_BIG: "Brelan, Suite, Couleur ou Deux Paires max.",
-        HIT_SMALL: "Top Paire avec bon kicker ou deuxième paire solide.",
-        DRAW: "Tirage Couleur (4 cartes) ou Tirage Quinte par les deux bouts.",
-        MISS: "Rien du tout, hauteur As ou hauteur Roi sans paire."
-    };
-
+    // Données des boutons conformes aux images demandées
     const data = {
         PRE: [
-            {l:"Elite", c:"premium", v:"PREMIUM"},
-            {l:"Fort", c:"strong", v:"STRONG"},
-            {l:"Projet", c:"spec", v:"SPEC"},
-            {l:"Faible", c:"weak", v:"WEAK"}
+            {t:"TOP", s:"(AA, KK, QQ, AK)", c:"premium", v:"ELITE"},
+            {t:"AS OU ROI FORT", s:"", c:"strong", v:"STRONG"},
+            {t:"PAIRE", s:"(22-JJ)", c:"strong", v:"PAIR"},
+            {t:"CARTES MOYENNES", s:"", c:"spec", v:"SPEC"},
+            {t:"AS PETIT", s:"/ POUBELLE", c:"weak", v:"WEAK"}
         ],
         POST: [
-            {l:"Monstre", c:"premium", v:"HIT_BIG"},
-            {l:"Top Paire", c:"strong", v:"HIT_SMALL"},
-            {l:"Tirage", c:"spec", v:"DRAW"},
-            {l:"Rien / Air", c:"weak", v:"MISS"}
+            {t:"MONSTRE", s:"(Brelan+)", c:"premium", v:"ELITE"},
+            {t:"TOP PAIRE", s:"", c:"strong", v:"STRONG"},
+            {t:"TIRAGE", s:"(FD/OESD)", c:"spec", v:"SPEC"},
+            {t:"RIEN / AIR", s:"", c:"weak", v:"WEAK"}
         ]
     };
+
+    function highlight(s) {
+        document.querySelectorAll('.section').forEach(x => x.classList.remove('active-step'));
+        document.getElementById('step' + s).classList.add('active-step');
+    }
 
     function setPos(val) {
         isDealer = val;
         document.getElementById('p-btn-on').classList.toggle('active', val);
         document.getElementById('p-btn-off').classList.toggle('active', !val);
         highlight(2);
-    }
-
-    function highlight(s) {
-        document.querySelectorAll('.section').forEach(x => x.classList.remove('active-step'));
-        document.getElementById('step' + s).classList.add('active-step');
     }
 
     function setOpp(act) {
@@ -170,31 +147,28 @@
         document.getElementById('hand-label').innerText = "3. Ma main (" + street + ")";
         
         set.forEach(m => {
-            const container = document.createElement('div');
-            container.className = 'btn-container';
-            
-            const tooltip = document.createElement('div');
-            tooltip.className = 'tooltip';
-            tooltip.innerText = descriptions[m.v];
-            
             const b = document.createElement('button');
             b.className = `btn ${m.c}`;
-            b.innerText = m.l;
-            b.onclick = () => { myPower = m.v; calculate(); nextStreet(); };
-            
-            container.appendChild(tooltip);
-            container.appendChild(b);
-            grid.appendChild(container);
+            b.innerHTML = `<span>${m.t}</span><small>${m.s}</small>`;
+            b.onclick = () => { myPower = m.v; calculate(); sendToSheet(); nextStreet(); };
+            grid.appendChild(b);
         });
     }
 
     function calculate() {
         if(!oppAction || !myPower) return;
+        const bb = parseInt(document.getElementById('my-bb').value);
         const res = document.getElementById('res-main');
         const zone = document.getElementById('display-zone');
-        let m = (oppAction === 'RAISE') ? 
-            (myPower.includes('PREMIUM') || myPower.includes('BIG') || myPower.includes('DRAW') ? "ALL-IN 🚀" : "FOLD ❌") : 
-            (myPower === 'WEAK' || myPower === 'MISS' ? "CHECK" : "BET 1/2 POT");
+
+        let m = "";
+        if(street === 'PRE') {
+            if(oppAction === 'RAISE') m = (myPower === 'ELITE' || (myPower === 'STRONG' && bb < 15)) ? "ALL-IN 🚀" : (myPower === 'WEAK' ? "FOLD ❌" : "CALL 🃏");
+            else m = (myPower === 'WEAK') ? "CHECK" : "RELANCE 3BB";
+        } else {
+            if(oppAction === 'RAISE') m = (myPower === 'ELITE' || myPower === 'SPEC') ? "ALL-IN 🚀" : (myPower === 'STRONG' ? "CALL 🃏" : "FOLD ❌");
+            else m = (myPower === 'WEAK' || myPower === 'MISS') ? "CHECK" : "BET 1/2 POT";
+        }
         res.innerText = m;
         zone.style.borderColor = m.includes("FOLD") ? "var(--red)" : "var(--green)";
     }
@@ -210,6 +184,19 @@
             renderButtons();
             highlight(2);
         }
+    }
+
+    function sendToSheet() {
+        const url = "https://script.google.com/macros/s/AKfycbw4eL5E7a6GrvfHRP1bhEXnHe-Phg_2MbYZp6lI7N7yYIe3ZbVAcvH_WDHVkoe0Z8A/exec";
+        const logData = {
+            position: isDealer ? "Bouton" : "Hors-Pos",
+            etape: street,
+            advAction: oppAction,
+            maMain: myPower,
+            decision: document.getElementById('res-main').innerText,
+            stack: document.getElementById('my-bb').value
+        };
+        fetch(url, { method: "POST", mode: "no-cors", body: JSON.stringify(logData) });
     }
 
     function reset() {
