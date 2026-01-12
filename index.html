@@ -3,35 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HU Flash Decision</title>
+    <title>HU Pro Coach - Dynamique</title>
     <style>
         :root {
-            --bg: #0a0a0a; --card: #1a1a1a; --gold: #ffcc00; --red: #ff4757; --green: #2ed573; --blue: #1e90ff;
+            --bg: #050505; --card: #121212; --gold: #ffcc00; --red: #ff4757; 
+            --green: #2ed573; --blue: #1e90ff; --gray: #2f3542;
         }
-        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; padding: 10px; }
-        .app { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app { width: 95%; max-width: 500px; display: flex; flex-direction: column; gap: 8px; }
         
-        .section { background: var(--card); border-radius: 10px; padding: 12px; border: 1px solid #333; }
-        .row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .section { background: var(--card); border-radius: 12px; padding: 15px; border: 1px solid #222; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .row { display: flex; gap: 8px; margin-bottom: 8px; justify-content: center; }
         
-        /* Boutons de catégorie ultra-rapides */
+        /* Boutons de catégorie */
         .cat-btn { 
-            flex: 1; padding: 15px 5px; border: none; border-radius: 6px; 
-            font-weight: bold; cursor: pointer; font-size: 0.85em;
-            background: #333; color: white; transition: 0.1s;
+            flex: 1; padding: 18px 5px; border: none; border-radius: 8px; 
+            font-weight: bold; cursor: pointer; font-size: 0.8em;
+            color: white; transition: 0.1s; text-transform: uppercase;
         }
-        .cat-btn:active { transform: scale(0.95); background: var(--gold); color: black; }
+        .cat-btn:active { transform: scale(0.95); opacity: 0.8; }
         
-        .premium { background: #4b3b00; border: 1px solid var(--gold); } /* AA, KK, AK */
-        .strong { background: #1e3a2a; border: 1px solid var(--green); } /* AX, Grosses cartes */
-        .speculative { background: #1a2a3a; border: 1px solid var(--blue); } /* Connecteurs, petites paires */
-        
-        .display { font-size: 1.5rem; text-align: center; font-weight: bold; padding: 20px; color: var(--gold); min-height: 40px; text-transform: uppercase; }
-        
-        .input-mini { background: #000; border: 1px solid #444; color: white; padding: 8px; width: 50px; text-align: center; border-radius: 4px; }
-        .toggle { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-dealer { background: var(--green); color: black; }
-        .btn-not-dealer { background: #444; color: white; }
+        /* Couleurs Légende */
+        .premium { background: linear-gradient(145deg, #b8860b, #daa520); color: black; } /* Or */
+        .strong { background: #218c74; } /* Vert Emeraude */
+        .speculative { background: #227093; } /* Bleu */
+        .weak { background: #4b4b4b; } /* Gris */
+
+        /* Aide visuelle / Légende */
+        .legend-box { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7em; margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 5px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        /* Affichage Dynamique */
+        .display-zone { 
+            text-align: center; padding: 20px; border-radius: 10px; 
+            border: 2px solid var(--gray); margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+        .step-title { font-size: 0.7em; letter-spacing: 2px; color: var(--gold); margin-bottom: 5px; }
+        .action-text { font-size: 1.6em; font-weight: 900; }
+
+        .input-bb { background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 10px; width: 60px; text-align: center; border-radius: 8px; font-weight: bold; font-size: 1.1em; }
+        .toggle-btn { flex: 2; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; background: var(--gray); color: white; }
+        .toggle-btn.active { background: var(--blue); }
     </style>
 </head>
 <body>
@@ -39,97 +53,130 @@
 <div class="app">
     <div class="section">
         <div class="row">
-            <button id="pos-btn" class="toggle btn-dealer" onclick="togglePos()">MOI AU BOUTON</button>
-            <div style="display:flex; align-items:center; gap:5px;">
-                <label style="font-size:0.7em">MON TAPIS (BB)</label>
-                <input type="number" id="my-bb" class="input-mini" value="25">
+            <button id="pos-btn" class="toggle-btn active" onclick="updatePos()">BOUTON (CHEF)</button>
+            <button id="stage-btn" class="toggle-btn" onclick="updateStage()">PRÉ-FLOP</button>
+            <input type="number" id="my-bb" class="input-bb" value="25">
+        </div>
+    </div>
+
+    <div class="legend-box">
+        <div class="legend-item"><span class="dot" style="background:var(--gold)"></span> <b>TOP:</b> AA, KK, QQ, AK</div>
+        <div class="legend-item"><span class="dot" style="background:var(--green)"></span> <b>FORT:</b> Ax, K10+, Paires</div>
+        <div class="legend-item"><span class="dot" style="background:var(--blue)"></span> <b>MOYEN:</b> Connecteurs, QJ, J10</div>
+        <div class="legend-item"><span class="dot" style="background:var(--gray)"></span> <b>FAIBLE:</b> Le reste</div>
+    </div>
+
+    <div class="section">
+        <div id="btn-grid">
             </div>
+        <div class="row" style="margin-top:10px;">
+            <button class="cat-btn" style="background:var(--red); padding:10px;" onclick="reset()">RESET MATCH</button>
         </div>
     </div>
 
-    <div class="section">
-        <small style="color:#888">1. CLIQUE SUR TA MAIN :</small>
-        <div class="row" style="margin-top:5px;">
-            <button class="cat-btn premium" onclick="decide('PREMIUM')">TOP (AA, KK, QQ, AK)</button>
-            <button class="cat-btn strong" onclick="decide('STRONG')">AS OU ROI FORT</button>
-        </div>
-        <div class="row">
-            <button class="cat-btn strong" onclick="decide('PAIR')">PAIRE (22-JJ)</button>
-            <button class="cat-btn speculative" onclick="decide('MED')">CARTES MOYENNES</button>
-        </div>
-        <div class="row">
-            <button class="cat-btn" onclick="decide('WEAK')">AS PETIT / POUBELLE</button>
-            <button class="cat-btn" style="background:#442222" onclick="reset()">RESET</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="row" style="align-items:center;">
-            <label style="flex:1">MISE ADVERSE :</label>
-            <button class="cat-btn" style="max-width:80px;" onclick="setOpp(0)">AUCUNE</button>
-            <button class="cat-btn" style="max-width:80px;" onclick="setOpp(3)">PETITE</button>
-            <button class="cat-btn" style="max-width:80px; background:var(--red)" onclick="setOpp(100)">TAPIS !</button>
-        </div>
-    </div>
-
-    <div class="section" style="border: 2px solid var(--gold);">
-        <div id="display-action" class="display">ATTENTE...</div>
+    <div class="display-zone" id="display-zone">
+        <div class="step-title" id="step-label">INSTRUCTIONS</div>
+        <div class="action-text" id="action-label">CHOISIS TA MAIN</div>
     </div>
 </div>
 
 <script>
     let isDealer = true;
-    let oppBet = 0;
+    let isPostFlop = false;
 
-    function togglePos() {
+    // Configuration des boutons selon l'étape
+    const preflopButtons = [
+        { label: "Top Main", cat: "premium", type: "PREMIUM" },
+        { label: "As/Roi Fort", cat: "strong", type: "STRONG" },
+        { label: "Petite Paire", cat: "strong", type: "PAIR" },
+        { label: "Moyenne/Suite", cat: "speculative", type: "MED" },
+        { label: "Poubelle", cat: "weak", type: "WEAK" }
+    ];
+
+    const postflopButtons = [
+        { label: "J'ai du lourd", cat: "premium", type: "HIT_BIG" },
+        { label: "Petite Paire", cat: "strong", type: "HIT_SMALL" },
+        { label: "Gros Tirage", cat: "speculative", type: "DRAW" },
+        { label: "Rien du tout", cat: "weak", type: "MISS" }
+    ];
+
+    function updatePos() {
         isDealer = !isDealer;
         const btn = document.getElementById('pos-btn');
-        btn.innerText = isDealer ? "MOI AU BOUTON" : "HORS POSITION";
-        btn.className = isDealer ? "toggle btn-dealer" : "toggle btn-not-dealer";
+        btn.innerText = isDealer ? "BOUTON (CHEF)" : "HORS POSITION";
+        btn.classList.toggle('active');
+        renderButtons();
     }
 
-    function setOpp(val) {
-        oppBet = val;
-        document.getElementById('display-action').innerText = "CLIQUE SUR TA MAIN";
+    function updateStage() {
+        isPostFlop = !isPostFlop;
+        const btn = document.getElementById('stage-btn');
+        btn.innerText = isPostFlop ? "POST-FLOP" : "PRÉ-FLOP";
+        btn.style.borderColor = isPostFlop ? "var(--green)" : "var(--gold)";
+        renderButtons();
     }
 
-    function decide(type) {
+    function renderButtons() {
+        const grid = document.getElementById('btn-grid');
+        grid.innerHTML = "";
+        const currentSet = isPostFlop ? postflopButtons : preflopButtons;
+        
+        let row;
+        currentSet.forEach((btn, index) => {
+            if (index % 2 === 0) {
+                row = document.createElement('div');
+                row.className = 'row';
+                grid.appendChild(row);
+            }
+            const b = document.createElement('button');
+            b.className = `cat-btn ${btn.cat}`;
+            b.innerText = btn.label;
+            b.onclick = () => calculate(btn.type);
+            row.appendChild(b);
+        });
+    }
+
+    function calculate(type) {
         const bb = parseInt(document.getElementById('my-bb').value);
-        const res = document.getElementById('display-action');
-        
-        // Logique simplifiée "Cerveau de Pro"
-        if (isDealer) {
-            if (oppBet >= 100) { // S'il fait tapis
-                if (type === 'PREMIUM' || (type === 'STRONG' && bb < 15)) res.innerText = "🔥 PAYE (ALL-IN)";
-                else res.innerText = "❌ FOLD";
+        const zone = document.getElementById('display-zone');
+        const label = document.getElementById('action-label');
+        let action = "";
+        let color = varName('--gold');
+
+        if (!isPostFlop) {
+            // LOGIQUE PRÉ-FLOP
+            if (bb < 10) {
+                action = (type === 'WEAK') ? "FOLD" : "TAPIS (ALL-IN)";
+            } else if (isDealer) {
+                action = (type === 'WEAK') ? "RELANCE 2BB / FOLD" : "RELANCE 2.5BB";
             } else {
-                if (type === 'WEAK') res.innerText = "➡️ RELANCE 2BB (BLUFF)";
-                else res.innerText = "⚔️ RELANCE 2.5BB";
+                if (type === 'PREMIUM') action = "3-BET (RELANCE FORT)";
+                else if (type === 'STRONG' || type === 'PAIR') action = "PAYE (CALL)";
+                else action = "FOLD";
             }
-        } else { // Hors position
-            if (oppBet === 0) {
-                res.innerText = "✅ CHECK / ATTEND";
-            } else {
-                if (type === 'PREMIUM') res.innerText = "🚀 RELANCE FORT (3-BET)";
-                else if (type === 'STRONG' || type === 'PAIR') res.innerText = "🃏 PAYE (VOIR FLOP)";
-                else res.innerText = "❌ FOLD";
-            }
-        }
-        
-        // Alerte Stack (Moins de 10 BB)
-        if (bb <= 10 && type !== 'WEAK' && oppBet < 100) {
-            res.innerText = "⚠️ TAPIS DIRECT !";
-            res.style.color = "var(--red)";
         } else {
-            res.style.color = "var(--gold)";
+            // LOGIQUE POST-FLOP
+            if (type === 'HIT_BIG' || type === 'DRAW') action = "MISE (60% POT)";
+            else if (type === 'HIT_SMALL') action = "CHECK / PAYE";
+            else action = "CHECK / FOLD";
         }
+
+        label.innerText = action;
+        zone.style.borderColor = (action.includes("FOLD")) ? varName('--red') : varName('--green');
     }
+
+    function varName(name) { return getComputedStyle(document.documentElement).getPropertyValue(name); }
 
     function reset() {
-        oppBet = 0;
-        document.getElementById('display-action').innerText = "PRÊT";
-        document.getElementById('display-action').style.color = "var(--gold)";
+        isPostFlop = false;
+        document.getElementById('stage-btn').innerText = "PRÉ-FLOP";
+        document.getElementById('action-label').innerText = "CHOISIS TA MAIN";
+        document.getElementById('display-zone').style.borderColor = varName('--gray');
+        renderButtons();
     }
+
+    // Initialisation
+    renderButtons();
 </script>
 </body>
 </html>
