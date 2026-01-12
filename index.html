@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HU Tactical Coach Pro</title>
+    <title>HU Coach Pro - Tooltip Edition</title>
     <style>
         :root {
             --bg: #080808; --card: #151515; --gold: #ffcc00; --red: #ff4757; 
@@ -14,58 +14,75 @@
         
         .app { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 12px; }
 
-        /* Animation Focus */
-        .section { background: var(--card); border-radius: 16px; padding: 18px; border: 2px solid #252525; transition: all 0.3s ease; }
-        .active-step { border-color: var(--gold) !important; box-shadow: 0 0 20px rgba(255, 204, 0, 0.15); transform: scale(1.01); }
+        /* Zones et Steps */
+        .section { background: var(--card); border-radius: 16px; padding: 18px; border: 2px solid #252525; position: relative; }
+        .active-step { border-color: var(--gold) !important; box-shadow: 0 0 20px rgba(255, 204, 0, 0.15); }
 
-        .label-step { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: block; font-weight: 800; letter-spacing: 1px; }
+        .label-step { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: block; font-weight: 800; }
 
-        /* Visuel Selector : Bouton */
-        .pos-selector { display: flex; background: #000; border-radius: 50px; padding: 5px; border: 1px solid #333; margin-bottom: 10px; }
-        .pos-btn { flex: 1; padding: 12px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; color: #666; background: transparent; transition: 0.3s; }
-        .pos-btn.active { background: var(--blue); color: white; box-shadow: 0 0 10px rgba(30, 144, 255, 0.4); }
-
-        /* Enchaînement des Rues */
-        .street-indicator { display: flex; gap: 5px; margin-bottom: 15px; }
-        .st-dot { flex: 1; height: 6px; border-radius: 10px; background: #333; transition: 0.5s; }
-        .st-dot.active { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
-
-        /* Grid de mains */
+        /* Style des Boutons de Mains avec Tooltip */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { padding: 18px 10px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 0.9rem; color: white; transition: 0.2s; background: #2a2a2a; }
-        .btn:active { transform: translateY(2px); }
+        .btn-container { position: relative; display: inline-block; width: 100%; }
         
+        .btn { width: 100%; padding: 18px 10px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 0.9rem; color: white; background: #2a2a2a; }
+        
+        /* Tooltip (Bulle) */
+        .tooltip {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: absolute;
+            z-index: 100;
+            bottom: 125%; /* Au-dessus du bouton */
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            font-weight: normal;
+            border: 1px solid var(--gold);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+
+        .btn-container:hover .tooltip { visibility: visible; opacity: 1; }
+
+        /* Couleurs */
         .premium { background: linear-gradient(135deg, #b8860b, #daa520); color: black; }
         .strong { background: #1b6d5b; }
         .spec { background: #1a5a7a; }
         .weak { background: #3d3d3d; }
 
-        /* Actions Adversaire */
+        /* Navigation et Status */
+        .pos-selector { display: flex; background: #000; border-radius: 50px; padding: 5px; border: 1px solid #333; margin-bottom: 10px; }
+        .pos-btn { flex: 1; padding: 12px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; color: #666; background: transparent; }
+        .pos-btn.active { background: var(--blue); color: white; }
+        .street-indicator { display: flex; gap: 5px; margin-bottom: 15px; }
+        .st-dot { flex: 1; height: 6px; border-radius: 10px; background: #333; }
+        .st-dot.active { background: var(--gold); }
+
         .opp-row { display: flex; gap: 10px; }
-        .opp-btn { flex: 1; background: #222; border: 1px solid #444; padding: 15px; border-radius: 12px; font-weight: 800; }
+        .opp-btn { flex: 1; background: #222; border: 1px solid #444; padding: 15px; border-radius: 12px; font-weight: bold; color: white; }
         .opp-btn.selected { background: var(--red); border-color: white; }
 
-        /* Resultat */
-        .display { text-align: center; padding: 25px; border-radius: 20px; border: 4px solid var(--gray); background: #000; margin-top: 5px; }
-        .action-main { font-size: 2.2rem; font-weight: 900; line-height: 1; margin-bottom: 5px; }
-        .action-sub { color: #888; font-size: 0.9rem; }
+        .display { text-align: center; padding: 25px; border-radius: 20px; border: 4px solid var(--gray); background: #000; }
+        .action-main { font-size: 2rem; font-weight: 900; }
 
-        /* Responsive Tablet/Desktop */
-        @media (min-width: 768px) {
-            .app { max-width: 800px; }
-            .grid { grid-template-columns: repeat(4, 1fr); }
-            .btn { padding: 25px 10px; }
-        }
+        @media (min-width: 768px) { .grid { grid-template-columns: repeat(4, 1fr); } }
     </style>
 </head>
 <body>
 
 <div class="app">
     <div id="step1" class="section active-step">
-        <span class="label-step">Configuration du Duel</span>
+        <span class="label-step">1. Duel & Position</span>
         <div class="pos-selector">
-            <button id="p-btn-on" class="pos-btn active" onclick="setPos(true)">OUI (BOUTON)</button>
-            <button id="p-btn-off" class="pos-btn" onclick="setPos(false)">NON (HORS POS)</button>
+            <button id="p-btn-on" class="pos-btn active" onclick="setPos(true)">BOUTON</button>
+            <button id="p-btn-off" class="pos-btn" onclick="setPos(false)">HORS POS</button>
         </div>
         <div class="street-indicator">
             <div id="dot-PRE" class="st-dot active"></div>
@@ -73,15 +90,10 @@
             <div id="dot-TURN" class="st-dot"></div>
             <div id="dot-RIVER" class="st-dot"></div>
         </div>
-        <div style="text-align:center;">
-            <label style="font-size:0.8rem">TAPIS : </label>
-            <input type="number" id="my-bb" value="25" style="background:transparent; border:none; border-bottom:2px solid var(--gold); color:var(--gold); font-size:1.2rem; width:60px; text-align:center; font-weight:bold;"> 
-            <span style="color:var(--gold); font-weight:bold;">BB</span>
-        </div>
     </div>
 
     <div id="step2" class="section">
-        <span class="label-step">L'adversaire a fait quoi ?</span>
+        <span class="label-step">2. Action Adverse</span>
         <div class="opp-row">
             <button class="btn opp-btn" id="opp-check" onclick="setOpp('CHECK')">CHECK / CALL</button>
             <button class="btn opp-btn" id="opp-raise" onclick="setOpp('RAISE')">MISE / RELANCE</button>
@@ -89,37 +101,58 @@
     </div>
 
     <div id="step3" class="section">
-        <span class="label-step" id="hand-label">Ma main (PRE-FLOP)</span>
+        <span class="label-step" id="hand-label">3. Ma Main</span>
         <div id="btn-grid" class="grid"></div>
     </div>
 
     <div class="display" id="display-zone">
         <div id="res-main" class="action-main">---</div>
-        <div id="res-sub" class="action-sub">En attente des infos</div>
     </div>
 
-    <button class="btn" style="background:var(--red); height:70px; font-size:1.3rem; margin-top:10px; border: 2px solid white;" onclick="reset()">RESET (MATCH SUIVANT)</button>
+    <button class="btn" style="background:var(--red); border: 2px solid white; margin-top:10px;" onclick="reset()">RESET MATCH</button>
 </div>
 
 <script>
     let isDealer = true, street = 'PRE', oppAction = '', myPower = '';
     const streets = ['PRE', 'FLOP', 'TURN', 'RIVER'];
 
-    const data = {
-        PRE: [{l:"Elite (AA,KK,AK)",c:"premium",v:"ELITE"},{l:"Fort (Ax, K10+)",c:"strong",v:"STRONG"},{l:"Moyen (89s, QJ)",c:"spec",v:"SPEC"},{l:"Faible",c:"weak",v:"WEAK"}],
-        POST: [{l:"Monstre (Brelan+)",c:"premium",v:"ELITE"},{l:"Top Paire",c:"strong",v:"STRONG"},{l:"Tirage (FD/OESD)",c:"spec",v:"SPEC"},{l:"Rien / Air",c:"weak",v:"WEAK"}]
+    // Définition des tooltips
+    const descriptions = {
+        PREMIUM: "AA, KK, QQ, JJ, AKs, AKo. Les meilleures mains possibles.",
+        STRONG: "AQ, AJ, KQ, KJs, Paires (77-TT). Très solide en duel.",
+        SPEC: "89s, JTs, QJ, Petites paires. Fort potentiel de suite/couleur.",
+        WEAK: "Ax faible, K5+, Q7+, n'importe quelle carte dépareillée jouable.",
+        HIT_BIG: "Brelan, Suite, Couleur ou Deux Paires max.",
+        HIT_SMALL: "Top Paire avec bon kicker ou deuxième paire solide.",
+        DRAW: "Tirage Couleur (4 cartes) ou Tirage Quinte par les deux bouts.",
+        MISS: "Rien du tout, hauteur As ou hauteur Roi sans paire."
     };
 
-    function highlight(s) {
-        document.querySelectorAll('.section').forEach(x => x.classList.remove('active-step'));
-        document.getElementById('step' + s).classList.add('active-step');
-    }
+    const data = {
+        PRE: [
+            {l:"Elite", c:"premium", v:"PREMIUM"},
+            {l:"Fort", c:"strong", v:"STRONG"},
+            {l:"Projet", c:"spec", v:"SPEC"},
+            {l:"Faible", c:"weak", v:"WEAK"}
+        ],
+        POST: [
+            {l:"Monstre", c:"premium", v:"HIT_BIG"},
+            {l:"Top Paire", c:"strong", v:"HIT_SMALL"},
+            {l:"Tirage", c:"spec", v:"DRAW"},
+            {l:"Rien / Air", c:"weak", v:"MISS"}
+        ]
+    };
 
     function setPos(val) {
         isDealer = val;
         document.getElementById('p-btn-on').classList.toggle('active', val);
         document.getElementById('p-btn-off').classList.toggle('active', !val);
         highlight(2);
+    }
+
+    function highlight(s) {
+        document.querySelectorAll('.section').forEach(x => x.classList.remove('active-step'));
+        document.getElementById('step' + s).classList.add('active-step');
     }
 
     function setOpp(act) {
@@ -134,36 +167,35 @@
         const grid = document.getElementById('btn-grid');
         grid.innerHTML = "";
         const set = (street === 'PRE') ? data.PRE : data.POST;
-        document.getElementById('hand-label').innerText = "Ma main (" + street + ")";
+        document.getElementById('hand-label').innerText = "3. Ma main (" + street + ")";
         
         set.forEach(m => {
+            const container = document.createElement('div');
+            container.className = 'btn-container';
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.innerText = descriptions[m.v];
+            
             const b = document.createElement('button');
             b.className = `btn ${m.c}`;
             b.innerText = m.l;
             b.onclick = () => { myPower = m.v; calculate(); nextStreet(); };
-            grid.appendChild(b);
+            
+            container.appendChild(tooltip);
+            container.appendChild(b);
+            grid.appendChild(container);
         });
     }
 
     function calculate() {
         if(!oppAction || !myPower) return;
-        const bb = parseInt(document.getElementById('my-bb').value);
         const res = document.getElementById('res-main');
-        const sub = document.getElementById('res-sub');
         const zone = document.getElementById('display-zone');
-
-        let m = "", s = "";
-        
-        if(street === 'PRE') {
-            if(oppAction === 'RAISE') m = (myPower === 'ELITE' || (myPower === 'STRONG' && bb < 15)) ? "ALL-IN 🚀" : (myPower === 'WEAK' ? "FOLD ❌" : "CALL 🃏");
-            else m = (myPower === 'WEAK') ? "CHECK / LIMP" : "RELANCE 3BB";
-        } else {
-            if(oppAction === 'RAISE') m = (myPower === 'ELITE' || myPower === 'SPEC') ? "ALL-IN 🚀" : (myPower === 'STRONG' ? "CALL 🃏" : "FOLD ❌");
-            else m = (myPower === 'WEAK') ? "CHECK" : "MISE 1/2 POT";
-        }
-
+        let m = (oppAction === 'RAISE') ? 
+            (myPower.includes('PREMIUM') || myPower.includes('BIG') || myPower.includes('DRAW') ? "ALL-IN 🚀" : "FOLD ❌") : 
+            (myPower === 'WEAK' || myPower === 'MISS' ? "CHECK" : "BET 1/2 POT");
         res.innerText = m;
-        sub.innerText = "Recommandation pour " + street;
         zone.style.borderColor = m.includes("FOLD") ? "var(--red)" : "var(--green)";
     }
 
@@ -171,9 +203,7 @@
         let idx = streets.indexOf(street);
         if(idx < 3) {
             street = streets[idx + 1];
-            oppAction = '';
-            myPower = '';
-            // Update UI
+            oppAction = ''; myPower = '';
             document.querySelectorAll('.st-dot').forEach(d => d.classList.remove('active'));
             document.getElementById('dot-' + street).classList.add('active');
             document.querySelectorAll('.opp-btn').forEach(b => b.classList.remove('selected'));
@@ -188,7 +218,6 @@
         document.getElementById('dot-PRE').classList.add('active');
         document.querySelectorAll('.opp-btn').forEach(b => b.classList.remove('selected'));
         document.getElementById('res-main').innerText = "---";
-        document.getElementById('display-zone').style.borderColor = "var(--gray)";
         renderButtons();
         highlight(1);
     }
