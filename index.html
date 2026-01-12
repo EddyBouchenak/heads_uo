@@ -3,110 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HU Pro Coach - Step by Step</title>
+    <title>HU Coach - Expert Mode</title>
     <style>
         :root {
             --bg: #050505; --card: #121212; --gold: #ffcc00; --red: #ff4757; 
-            --green: #2ed573; --blue: #1e90ff; --gray: #2f3542;
+            --green: #2ed573; --blue: #1e90ff; --gray: #2f3542; --white: #ffffff;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; padding-top: 10px; }
-        .app { width: 95%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--white); margin: 0; display: flex; justify-content: center; padding: 10px; }
+        .app { width: 100%; max-width: 550px; display: flex; flex-direction: column; gap: 10px; }
         
-        /* Animation de surbrillance */
-        @keyframes highlight {
-            0% { border-color: #444; box-shadow: none; }
-            50% { border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 204, 0, 0.4); }
-            100% { border-color: #444; box-shadow: none; }
-        }
-        .active-step { animation: highlight 1.5s infinite; border: 2px solid var(--gold) !important; }
+        /* Highlight System */
+        .section { background: var(--card); border-radius: 12px; padding: 15px; border: 2px solid #222; transition: 0.3s; }
+        .active-step { border-color: var(--gold) !important; box-shadow: 0 0 15px rgba(255, 204, 0, 0.2); }
 
-        .section { background: var(--card); border-radius: 12px; padding: 12px; border: 1px solid #222; transition: 0.3s; }
-        .label-step { font-size: 0.7em; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; }
-        
+        .label-step { font-size: 0.75em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; display: block; font-weight: bold; }
         .row { display: flex; gap: 8px; margin-bottom: 8px; }
         
-        .btn { flex: 1; padding: 12px 5px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8em; color: white; background: #333; }
-        .btn-toggle.active { background: var(--blue); }
-        .opp-btn.selected { background: var(--red); border: 1px solid white; }
+        /* Buttons */
+        .btn { flex: 1; padding: 12px 5px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8em; color: white; background: #222; border: 1px solid #444; }
+        .btn-toggle.active { background: var(--blue); border-color: var(--white); }
+        .opp-btn.selected { background: var(--red); color: white; border-color: var(--white); }
 
-        .cat-btn { padding: 18px 5px; text-transform: uppercase; width: 100%; margin-bottom: 5px; }
-        .premium { background: linear-gradient(145deg, #b8860b, #daa520); color: black; }
-        .strong { background: #218c74; }
-        .speculative { background: #227093; }
-        .weak { background: #4b4b4b; }
+        /* Power Legend */
+        .legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; font-size: 0.7em; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 1px solid #333; }
+        .leg-item { display: flex; align-items: center; gap: 8px; }
+        .pwr-dot { width: 10px; height: 10px; border-radius: 2px; }
 
-        .display-zone { text-align: center; padding: 20px; border-radius: 12px; border: 3px solid var(--gray); margin-top: 10px; }
-        .action-text { font-size: 1.6em; font-weight: 900; }
+        /* Card Categories */
+        .cat-btn { padding: 15px 5px; text-transform: uppercase; width: 100%; margin-bottom: 6px; }
+        .p-premium { background: linear-gradient(145deg, #b8860b, #daa520); color: black; } /* AA, KK, QQ, AK */
+        .p-strong { background: #218c74; } /* AQ, AJ, KQ, Paires moyennes */
+        .p-spec { background: #227093; } /* Suited connectors, QJ, J10 */
+        .p-weak { background: #444; } /* Mains marginales */
+
+        /* Result Display */
+        .display-zone { text-align: center; padding: 25px; border-radius: 12px; border: 4px solid var(--gray); background: #000; }
+        .action-text { font-size: 2em; font-weight: 900; letter-spacing: -1px; }
+        .sub-text { font-size: 0.9em; color: #aaa; margin-top: 5px; }
         
-        input { background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 8px; width: 50px; text-align: center; border-radius: 5px; }
+        input { background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 8px; width: 50px; text-align: center; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="app">
+    <div class="legend">
+        <div class="leg-item"><div class="pwr-dot p-premium"></div> <b>ELITE:</b> AA, KK, QQ, AKs / Brelan+</div>
+        <div class="leg-item"><div class="pwr-dot p-strong"></div> <b>FORT:</b> AQ, AJ, KQs, 77-JJ / Top Paire</div>
+        <div class="leg-item"><div class="pwr-dot p-spec"></div> <b>PROJET:</b> 89s, JTs, QJ / Tirage Flush-Quinte</div>
+        <div class="leg-item"><div class="pwr-dot p-weak"></div> <b>FAIBLE:</b> K5, Q7, 22-55 / Hauteur As</div>
+    </div>
+
     <div id="step1" class="section active-step">
-        <span class="label-step">1. Configurer la table</span>
+        <span class="label-step">1. Position & Stack</span>
         <div class="row">
             <button id="pos-btn" class="btn btn-toggle active" onclick="updatePos()">AU BOUTON</button>
-            <button id="stage-btn" class="btn btn-toggle" onclick="updateStage()">PRÉ-FLOP</button>
-            <input type="number" id="my-bb" value="25" onchange="nextStep(2)">
+            <div style="display:flex; align-items:center; gap:8px; flex:1; justify-content:center;">
+                <label style="font-size:0.8em">MON TAPIS:</label>
+                <input type="number" id="my-bb" value="25" onchange="calculate()"> <b style="color:var(--gold)">BB</b>
+            </div>
         </div>
     </div>
 
     <div id="step2" class="section">
-        <span class="label-step">2. Que fait l'adversaire ?</span>
+        <span class="label-step">2. Action de l'adversaire</span>
         <div class="row">
-            <button class="btn opp-btn" id="opp-fold" onclick="setOpp('FOLD')">IL FOLD</button>
-            <button class="btn opp-btn" id="opp-check" onclick="setOpp('CHECK')">CHECK/CALL</button>
-            <button class="btn opp-btn" id="opp-raise" onclick="setOpp('RAISE')">IL RELANCE</button>
+            <button class="btn opp-btn" id="opp-check" onclick="setOpp('CHECK')">CHECK / PASSÉ</button>
+            <button class="btn opp-btn" id="opp-raise" onclick="setOpp('RAISE')">MISE / RELANCE</button>
         </div>
     </div>
 
     <div id="step3" class="section">
-        <span class="label-step">3. Ta main / Ton jeu</span>
+        <span class="label-step">3. Moment du coup</span>
+        <div class="row">
+            <button class="btn btn-street active" id="st-pre" onclick="setStreet('PRE')">PRE-FLOP</button>
+            <button class="btn btn-street" id="st-flop" onclick="setStreet('FLOP')">FLOP</button>
+            <button class="btn btn-street" id="st-turn" onclick="setStreet('TURN')">TURN</button>
+            <button class="btn btn-street" id="st-river" onclick="setStreet('RIVER')">RIVER</button>
+        </div>
+    </div>
+
+    <div id="step4" class="section">
+        <span class="label-step">4. Ma Main actuelle</span>
         <div id="btn-grid"></div>
     </div>
 
     <div class="display-zone" id="display-zone">
-        <div id="action-label" class="action-text">...</div>
+        <div id="action-label" class="action-text">EN ATTENTE</div>
+        <div id="sub-label" class="sub-text">Remplis les étapes en surbrillance</div>
     </div>
 
-    <button class="btn" style="background:var(--red); height: 50px;" onclick="reset()">MATCH SUIVANT / RESET</button>
+    <button class="btn" style="background:var(--red); height: 60px; font-size: 1.2em;" onclick="reset()">MATCH SUIVANT (RESET)</button>
 </div>
 
 <script>
-    let isDealer = true, isPostFlop = false, oppAction = '', myLastType = '';
+    let isDealer = true, street = 'PRE', oppAction = '', myPower = '';
 
-    const cards = {
-        pre: [{l:"TOP (AA, KK, AK)", c:"premium", t:"PREMIUM"}, {l:"As/Roi Fort", c:"strong", t:"STRONG"}, {l:"Paire (22-JJ)", c:"strong", t:"PAIR"}, {l:"Moyen", c:"speculative", t:"MED"}, {l:"Faible", c:"weak", t:"WEAK"}],
-        post: [{l:"Jeu Max", c:"premium", t:"HIT_BIG"}, {l:"Top Paire", c:"strong", t:"HIT_SMALL"}, {l:"Tirage", c:"speculative", t:"DRAW"}, {l:"Rien", c:"weak", t:"MISS"}]
+    const moves = {
+        PRE: [
+            {l:"Elite (AA, KK, AK)", c:"p-premium", v:"ELITE"},
+            {l:"Fort (AQ, KJs, JJ)", c:"p-strong", v:"STRONG"},
+            {l:"Projet (89s, J10)", c:"p-spec", v:"SPEC"},
+            {l:"Faible / Trash", c:"p-weak", v:"WEAK"}
+        ],
+        POST: [
+            {l:"Monstre (Brelan+)", c:"p-premium", v:"ELITE"},
+            {l:"Top Paire / Grosse Paire", c:"p-strong", v:"STRONG"},
+            {l:"Tirage (Couleur/Quinte)", c:"p-spec", v:"SPEC"},
+            {l:"Rien / Air", c:"p-weak", v:"WEAK"}
+        ]
     };
 
-    function nextStep(step) {
+    function highlight(step) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active-step'));
         document.getElementById('step' + step).classList.add('active-step');
     }
 
-    function updatePos() { isDealer = !isDealer; document.getElementById('pos-btn').innerText = isDealer ? "AU BOUTON" : "HORS POSITION"; document.getElementById('pos-btn').classList.toggle('active'); nextStep(2); }
-    
-    function updateStage() { isPostFlop = !isPostFlop; document.getElementById('stage-btn').innerText = isPostFlop ? "POST-FLOP" : "PRÉ-FLOP"; renderButtons(); nextStep(2); }
+    function updatePos() { 
+        isDealer = !isDealer; 
+        document.getElementById('pos-btn').innerText = isDealer ? "AU BOUTON" : "HORS POSITION";
+        document.getElementById('pos-btn').classList.toggle('active');
+        highlight(2);
+    }
 
     function setOpp(act) {
         oppAction = act;
         document.querySelectorAll('.opp-btn').forEach(b => b.classList.remove('selected'));
         document.getElementById('opp-' + act.toLowerCase()).classList.add('selected');
-        nextStep(3);
+        highlight(3);
+        calculate();
+    }
+
+    function setStreet(s) {
+        street = s;
+        document.querySelectorAll('.btn-street').forEach(b => b.classList.remove('active'));
+        document.getElementById('st-' + s.toLowerCase()).classList.add('active');
+        renderButtons();
+        highlight(4);
         calculate();
     }
 
     function renderButtons() {
         const grid = document.getElementById('btn-grid'); grid.innerHTML = "";
-        const current = isPostFlop ? cards.post : cards.pre;
-        current.forEach(btn => {
+        const currentSet = (street === 'PRE') ? moves.PRE : moves.POST;
+        currentSet.forEach(m => {
             const b = document.createElement('button');
-            b.className = `btn cat-btn ${btn.c}`;
-            b.innerText = btn.l;
-            b.onclick = () => { myLastType = btn.t; nextStep(1); calculate(); };
+            b.className = `btn cat-btn ${m.c}`;
+            b.innerText = m.l;
+            b.onclick = () => { myPower = m.v; highlight(1); calculate(); };
             grid.appendChild(b);
         });
     }
@@ -114,28 +158,54 @@
     function calculate() {
         const bb = parseInt(document.getElementById('my-bb').value);
         const label = document.getElementById('action-label');
-        if (!oppAction || !myLastType) return;
+        const sub = document.getElementById('sub-label');
+        const zone = document.getElementById('display-zone');
 
-        let advice = "";
-        if (!isPostFlop) {
-            if (oppAction === 'FOLD') advice = "GAGNÉ ! ✅";
-            else if (oppAction === 'RAISE') advice = (myLastType === 'PREMIUM' || (myLastType === 'STRONG' && bb < 15)) ? "RELANCE / TAPIS 🚀" : (myLastType === 'PAIR') ? "CALL 🃏" : "FOLD ❌";
-            else advice = (myLastType === 'WEAK') ? "CHECK" : "RELANCE 3BB ⚔️";
-        } else {
-            if (oppAction === 'RAISE') advice = (myLastType === 'HIT_BIG' || myLastType === 'DRAW') ? "ALL-IN 🚀" : "FOLD ❌";
-            else advice = (myLastType === 'MISS') ? "CHECK" : "MISE 50% POT";
+        if (!oppAction || !myPower) return;
+
+        let res = "", info = "";
+
+        if (street === 'PRE') {
+            if (oppAction === 'RAISE') {
+                if (myPower === 'ELITE') { res = "3-BET / TAPIS"; info = "On veut tout mettre maintenant"; }
+                else if (myPower === 'STRONG' || (myPower === 'SPEC' && isDealer)) { res = "CALL (PAYER)"; info = "On va voir le flop"; }
+                else { res = "FOLD ❌"; info = "Trop risqué ici"; }
+            } else {
+                res = (myPower === 'WEAK') ? "CHECK / MIN-RAISE" : "RELANCE 3BB";
+                info = "On prend le contrôle du pot";
+            }
+        } else if (street === 'FLOP' || street === 'TURN') {
+            if (oppAction === 'RAISE') {
+                if (myPower === 'ELITE' || myPower === 'SPEC') { res = "ALL-IN 🚀"; info = "On protège ou on a un gros tirage"; }
+                else if (myPower === 'STRONG') { res = "CALL 🃏"; info = "On vérifie la carte suivante"; }
+                else { res = "FOLD ❌"; info = "On abandonne le coup"; }
+            } else {
+                res = (myPower === 'WEAK') ? "CHECK" : "MISE 50% POT";
+                info = "On valorise notre main";
+            }
+        } else { // RIVER
+            if (oppAction === 'RAISE') {
+                if (myPower === 'ELITE') { res = "PAYE / RELANCE"; info = "On est devant souvent"; }
+                else { res = "FOLD ❌"; info = "Il a souvent mieux"; }
+            } else {
+                res = (myPower === 'ELITE' || myPower === 'STRONG') ? "GROSSE MISE" : "CHECK / ABANDON";
+                info = "Fin du coup, soyez prudent";
+            }
         }
-        label.innerText = advice;
-        document.getElementById('display-zone').style.borderColor = advice.includes("FOLD") ? "var(--red)" : "var(--green)";
+
+        label.innerText = res;
+        sub.innerText = info;
+        zone.style.borderColor = res.includes("FOLD") ? "var(--red)" : "var(--green)";
     }
 
     function reset() {
-        oppAction = ''; myLastType = '';
+        oppAction = ''; myPower = ''; street = 'PRE';
         document.querySelectorAll('.opp-btn').forEach(b => b.classList.remove('selected'));
-        document.getElementById('action-label').innerText = "...";
+        setStreet('PRE');
+        document.getElementById('action-label').innerText = "EN ATTENTE";
+        document.getElementById('sub-label').innerText = "Remplis les étapes en surbrillance";
         document.getElementById('display-zone').style.borderColor = "var(--gray)";
-        renderButtons();
-        nextStep(1);
+        highlight(1);
     }
 
     renderButtons();
