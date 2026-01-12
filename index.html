@@ -3,58 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HU Commando - Tactique Complète</title>
+    <title>HU Pro Coach - Step by Step</title>
     <style>
         :root {
             --bg: #050505; --card: #121212; --gold: #ffcc00; --red: #ff4757; 
             --green: #2ed573; --blue: #1e90ff; --gray: #2f3542;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; padding-top: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; justify-content: center; padding-top: 10px; }
         .app { width: 95%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; }
         
-        .section { background: var(--card); border-radius: 12px; padding: 15px; border: 1px solid #222; }
+        /* Animation de surbrillance */
+        @keyframes highlight {
+            0% { border-color: #444; box-shadow: none; }
+            50% { border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 204, 0, 0.4); }
+            100% { border-color: #444; box-shadow: none; }
+        }
+        .active-step { animation: highlight 1.5s infinite; border: 2px solid var(--gold) !important; }
+
+        .section { background: var(--card); border-radius: 12px; padding: 12px; border: 1px solid #222; transition: 0.3s; }
         .label-step { font-size: 0.7em; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; }
         
         .row { display: flex; gap: 8px; margin-bottom: 8px; }
         
-        /* Boutons */
-        .btn { flex: 1; padding: 12px 5px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.1s; font-size: 0.8em; color: white; }
-        .btn-toggle { background: var(--gray); }
+        .btn { flex: 1; padding: 12px 5px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8em; color: white; background: #333; }
         .btn-toggle.active { background: var(--blue); }
-        
-        .opp-btn { background: #333; border: 1px solid #444; }
-        .opp-btn.selected { background: var(--red); border-color: white; }
+        .opp-btn.selected { background: var(--red); border: 1px solid white; }
 
-        .cat-btn { padding: 20px 5px; text-transform: uppercase; }
+        .cat-btn { padding: 18px 5px; text-transform: uppercase; width: 100%; margin-bottom: 5px; }
         .premium { background: linear-gradient(145deg, #b8860b, #daa520); color: black; }
         .strong { background: #218c74; }
         .speculative { background: #227093; }
         .weak { background: #4b4b4b; }
 
-        /* Affichage */
-        .display-zone { text-align: center; padding: 25px; border-radius: 12px; border: 3px solid var(--gray); background: rgba(255,255,255,0.02); }
-        .action-text { font-size: 1.8em; font-weight: 900; line-height: 1.2; }
+        .display-zone { text-align: center; padding: 20px; border-radius: 12px; border: 3px solid var(--gray); margin-top: 10px; }
+        .action-text { font-size: 1.6em; font-weight: 900; }
         
-        input { background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 8px; width: 50px; text-align: center; border-radius: 5px; font-weight: bold; }
+        input { background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 8px; width: 50px; text-align: center; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div class="app">
-    <div class="section">
-        <span class="label-step">1. Ma Situation</span>
+    <div id="step1" class="section active-step">
+        <span class="label-step">1. Configurer la table</span>
         <div class="row">
-            <button id="pos-btn" class="btn btn-toggle active" onclick="updatePos()">MOI AU BOUTON</button>
+            <button id="pos-btn" class="btn btn-toggle active" onclick="updatePos()">AU BOUTON</button>
             <button id="stage-btn" class="btn btn-toggle" onclick="updateStage()">PRÉ-FLOP</button>
-            <div style="display:flex; align-items:center; gap:5px;">
-                <label style="font-size:0.6em">BB:</label>
-                <input type="number" id="my-bb" value="25" onchange="calculate()">
-            </div>
+            <input type="number" id="my-bb" value="25" onchange="nextStep(2)">
         </div>
     </div>
 
-    <div class="section">
-        <span class="label-step">2. Action de l'adversaire ?</span>
+    <div id="step2" class="section">
+        <span class="label-step">2. Que fait l'adversaire ?</span>
         <div class="row">
             <button class="btn opp-btn" id="opp-fold" onclick="setOpp('FOLD')">IL FOLD</button>
             <button class="btn opp-btn" id="opp-check" onclick="setOpp('CHECK')">CHECK/CALL</button>
@@ -62,72 +62,51 @@
         </div>
     </div>
 
-    <div class="section">
-        <span class="label-step">3. Ma Main / Force</span>
+    <div id="step3" class="section">
+        <span class="label-step">3. Ta main / Ton jeu</span>
         <div id="btn-grid"></div>
     </div>
 
     <div class="display-zone" id="display-zone">
-        <div id="action-label" class="action-text">EN ATTENTE...</div>
+        <div id="action-label" class="action-text">...</div>
     </div>
 
-    <button class="btn" style="background:var(--red); margin-top:10px;" onclick="reset()">RESET TABLE</button>
+    <button class="btn" style="background:var(--red); height: 50px;" onclick="reset()">MATCH SUIVANT / RESET</button>
 </div>
 
 <script>
-    let isDealer = true;
-    let isPostFlop = false;
-    let oppAction = '';
-    let myLastType = '';
+    let isDealer = true, isPostFlop = false, oppAction = '', myLastType = '';
 
     const cards = {
-        pre: [
-            { label: "TOP (AA, KK, AK)", cat: "premium", type: "PREMIUM" },
-            { label: "As/Roi Fort", cat: "strong", type: "STRONG" },
-            { label: "Paire (22-JJ)", cat: "strong", type: "PAIR" },
-            { label: "Moyen (89s, QJ)", cat: "speculative", type: "MED" },
-            { label: "Faible", cat: "weak", type: "WEAK" }
-        ],
-        post: [
-            { label: "Jeu Max / Brelan", cat: "premium", type: "HIT_BIG" },
-            { label: "Top Paire", cat: "strong", type: "HIT_SMALL" },
-            { label: "Gros Tirage", cat: "speculative", type: "DRAW" },
-            { label: "Rien", cat: "weak", type: "MISS" }
-        ]
+        pre: [{l:"TOP (AA, KK, AK)", c:"premium", t:"PREMIUM"}, {l:"As/Roi Fort", c:"strong", t:"STRONG"}, {l:"Paire (22-JJ)", c:"strong", t:"PAIR"}, {l:"Moyen", c:"speculative", t:"MED"}, {l:"Faible", c:"weak", t:"WEAK"}],
+        post: [{l:"Jeu Max", c:"premium", t:"HIT_BIG"}, {l:"Top Paire", c:"strong", t:"HIT_SMALL"}, {l:"Tirage", c:"speculative", t:"DRAW"}, {l:"Rien", c:"weak", t:"MISS"}]
     };
 
-    function updatePos() {
-        isDealer = !isDealer;
-        document.getElementById('pos-btn').innerText = isDealer ? "MOI AU BOUTON" : "HORS POSITION";
-        document.getElementById('pos-btn').classList.toggle('active');
-        calculate();
+    function nextStep(step) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active-step'));
+        document.getElementById('step' + step).classList.add('active-step');
     }
 
-    function updateStage() {
-        isPostFlop = !isPostFlop;
-        document.getElementById('stage-btn').innerText = isPostFlop ? "POST-FLOP" : "PRÉ-FLOP";
-        renderButtons();
-        calculate();
-    }
+    function updatePos() { isDealer = !isDealer; document.getElementById('pos-btn').innerText = isDealer ? "AU BOUTON" : "HORS POSITION"; document.getElementById('pos-btn').classList.toggle('active'); nextStep(2); }
+    
+    function updateStage() { isPostFlop = !isPostFlop; document.getElementById('stage-btn').innerText = isPostFlop ? "POST-FLOP" : "PRÉ-FLOP"; renderButtons(); nextStep(2); }
 
     function setOpp(act) {
         oppAction = act;
         document.querySelectorAll('.opp-btn').forEach(b => b.classList.remove('selected'));
         document.getElementById('opp-' + act.toLowerCase()).classList.add('selected');
+        nextStep(3);
         calculate();
     }
 
     function renderButtons() {
-        const grid = document.getElementById('btn-grid');
-        grid.innerHTML = "";
+        const grid = document.getElementById('btn-grid'); grid.innerHTML = "";
         const current = isPostFlop ? cards.post : cards.pre;
         current.forEach(btn => {
             const b = document.createElement('button');
-            b.className = `btn cat-btn ${btn.cat}`;
-            b.style.width = "100%";
-            b.style.marginBottom = "5px";
-            b.innerText = btn.label;
-            b.onclick = () => { myLastType = btn.type; calculate(); };
+            b.className = `btn cat-btn ${btn.c}`;
+            b.innerText = btn.l;
+            b.onclick = () => { myLastType = btn.t; nextStep(1); calculate(); };
             grid.appendChild(b);
         });
     }
@@ -135,44 +114,28 @@
     function calculate() {
         const bb = parseInt(document.getElementById('my-bb').value);
         const label = document.getElementById('action-label');
-        const zone = document.getElementById('display-zone');
-        
-        if (!oppAction || !myLastType) {
-            label.innerText = "FINIS LA SAISIE";
-            return;
-        }
+        if (!oppAction || !myLastType) return;
 
         let advice = "";
-        
-        if (!isPostFlop) { // --- LOGIQUE PRÉ-FLOP ---
-            if (oppAction === 'FOLD') advice = "TU GAGNES LE COUP !";
-            else if (oppAction === 'RAISE') {
-                if (myLastType === 'PREMIUM') advice = "SUR-RELANCE (3-BET)";
-                else if (myLastType === 'STRONG' || (myLastType === 'PAIR' && bb > 15)) advice = "PAYE (CALL)";
-                else advice = "FOLD ❌";
-            } else { // Adversaire Check/Call
-                advice = (myLastType === 'WEAK') ? "CHECK / LIMPE" : "RELANCE 3BB";
-            }
-            if (bb < 12 && oppAction === 'RAISE' && myLastType !== 'WEAK') advice = "TAPIS (ALL-IN) 🚀";
-        } else { // --- LOGIQUE POST-FLOP ---
-            if (oppAction === 'RAISE') {
-                if (myLastType === 'HIT_BIG' || myLastType === 'DRAW') advice = "RELANCE / TAPIS";
-                else if (myLastType === 'HIT_SMALL') advice = "PAYE UNE FOIS";
-                else advice = "FOLD ❌";
-            } else {
-                advice = (myLastType === 'MISS') ? "CHECK" : "MISE (1/2 POT)";
-            }
+        if (!isPostFlop) {
+            if (oppAction === 'FOLD') advice = "GAGNÉ ! ✅";
+            else if (oppAction === 'RAISE') advice = (myLastType === 'PREMIUM' || (myLastType === 'STRONG' && bb < 15)) ? "RELANCE / TAPIS 🚀" : (myLastType === 'PAIR') ? "CALL 🃏" : "FOLD ❌";
+            else advice = (myLastType === 'WEAK') ? "CHECK" : "RELANCE 3BB ⚔️";
+        } else {
+            if (oppAction === 'RAISE') advice = (myLastType === 'HIT_BIG' || myLastType === 'DRAW') ? "ALL-IN 🚀" : "FOLD ❌";
+            else advice = (myLastType === 'MISS') ? "CHECK" : "MISE 50% POT";
         }
-
         label.innerText = advice;
-        zone.style.borderColor = advice.includes("FOLD") ? "var(--red)" : "var(--green)";
+        document.getElementById('display-zone').style.borderColor = advice.includes("FOLD") ? "var(--red)" : "var(--green)";
     }
 
     function reset() {
         oppAction = ''; myLastType = '';
         document.querySelectorAll('.opp-btn').forEach(b => b.classList.remove('selected'));
+        document.getElementById('action-label').innerText = "...";
+        document.getElementById('display-zone').style.borderColor = "var(--gray)";
         renderButtons();
-        calculate();
+        nextStep(1);
     }
 
     renderButtons();
